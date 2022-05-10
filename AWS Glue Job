@@ -1,0 +1,160 @@
+
+Conversation opened. 1 unread message.
+
+Skip to content
+Using SJSU Mail with screen readers
+Enable desktop notifications for SJSU Mail.
+   OK  No thanks
+1 of 1,038
+(no subject)
+Inbox
+
+Anisha Rao
+5:59 PM (0 minutes ago)
+to me
+
+import sys
+from awsglue.transforms import *
+from awsglue.utils import getResolvedOptions
+from pyspark.context import SparkContext
+from awsglue.context import GlueContext
+from awsglue.job import Job
+from awsglue.dynamicframe import DynamicFrame
+from pyspark.sql import functions as SqlFuncs
+
+args = getResolvedOptions(sys.argv, ["JOB_NAME"])
+sc = SparkContext()
+glueContext = GlueContext(sc)
+spark = glueContext.spark_session
+job = Job(glueContext)
+job.init(args["JOB_NAME"], args)
+
+# Script generated for node S3 bucket
+S3bucket_node1 = glueContext.create_dynamic_frame.from_catalog(
+    database="crimes-crawler-db",
+    table_name="crime_output_bucket",
+    transformation_ctx="S3bucket_node1",
+)
+
+# Script generated for node ApplyMapping
+ApplyMapping_node2 = ApplyMapping.apply(
+    frame=S3bucket_node1,
+    mappings=[
+        ("date incident occured", "string", "date incident occured", "string"),
+        ("month", "long", "month", "long"),
+        ("time", "string", "time", "string"),
+        ("year", "long", "year", "long"),
+        ("date", "string", "date", "string"),
+        ("day", "long", "day", "long"),
+        ("date id", "long", "date id", "long"),
+    ],
+    transformation_ctx="ApplyMapping_node2",
+)
+
+# Script generated for node Apply Mapping
+ApplyMapping_node1651338749405 = ApplyMapping.apply(
+    frame=S3bucket_node1,
+    mappings=[
+        ("crime description", "string", "crime description", "string"),
+        ("crime id", "long", "crime id", "long"),
+    ],
+    transformation_ctx="ApplyMapping_node1651338749405",
+)
+
+# Script generated for node Apply Mapping
+ApplyMapping_node1651338751359 = ApplyMapping.apply(
+    frame=S3bucket_node1,
+    mappings=[
+        ("location description", "string", "location description", "string"),
+        ("block", "string", "block", "string"),
+        ("latitude", "double", "latitude", "double"),
+        ("longitude", "double", "longitude", "double"),
+        ("city", "string", "city", "string"),
+        ("location id", "long", "location id", "long"),
+    ],
+    transformation_ctx="ApplyMapping_node1651338751359",
+)
+
+# Script generated for node Apply Mapping
+ApplyMapping_node1651338752927 = ApplyMapping.apply(
+    frame=S3bucket_node1,
+    mappings=[
+        ("crime id", "long", "crime id", "long"),
+        ("location id", "long", "location id", "long"),
+        ("date id", "long", "date id", "long"),
+    ],
+    transformation_ctx="ApplyMapping_node1651338752927",
+)
+
+# Script generated for node Drop Duplicates
+DropDuplicates_node1651338847349 = DynamicFrame.fromDF(
+    ApplyMapping_node2.toDF().dropDuplicates(),
+    glueContext,
+    "DropDuplicates_node1651338847349",
+)
+
+# Script generated for node Drop Duplicates
+DropDuplicates_node1651338850139 = DynamicFrame.fromDF(
+    ApplyMapping_node1651338749405.toDF().dropDuplicates(),
+    glueContext,
+    "DropDuplicates_node1651338850139",
+)
+
+# Script generated for node Drop Duplicates
+DropDuplicates_node1651338852920 = DynamicFrame.fromDF(
+    ApplyMapping_node1651338751359.toDF().dropDuplicates(),
+    glueContext,
+    "DropDuplicates_node1651338852920",
+)
+
+# Script generated for node Drop Duplicates
+DropDuplicates_node1651338856492 = DynamicFrame.fromDF(
+    ApplyMapping_node1651338752927.toDF().dropDuplicates(),
+    glueContext,
+    "DropDuplicates_node1651338856492",
+)
+
+
+DropDuplicates_node1651338847349 = DropDuplicates_node1651338847349.repartition(1)
+DropDuplicates_node1651338850139 = DropDuplicates_node1651338850139.repartition(1)
+DropDuplicates_node1651338852920 = DropDuplicates_node1651338852920.repartition(1)
+DropDuplicates_node1651338856492 = DropDuplicates_node1651338856492.repartition(1)
+
+# Script generated for node Amazon S3
+AmazonS3_node1651338862966 = glueContext.write_dynamic_frame.from_options(
+    frame=DropDuplicates_node1651338847349,
+    connection_type="s3",
+    format="csv",
+    connection_options={"path": "s3://crimes-output-job-bucket", "partitionKeys": []},
+    transformation_ctx="AmazonS3_node1651338862966",
+)
+
+# Script generated for node Amazon S3
+AmazonS3_node1651338865234 = glueContext.write_dynamic_frame.from_options(
+    frame=DropDuplicates_node1651338850139,
+    connection_type="s3",
+    format="csv",
+    connection_options={"path": "s3://crimes-output-job-bucket", "partitionKeys": []},
+    transformation_ctx="AmazonS3_node1651338865234",
+)
+
+# Script generated for node Amazon S3
+AmazonS3_node1651338868779 = glueContext.write_dynamic_frame.from_options(
+    frame=DropDuplicates_node1651338852920,
+    connection_type="s3",
+    format="csv",
+    connection_options={"path": "s3://crimes-output-job-bucket", "partitionKeys": []},
+    transformation_ctx="AmazonS3_node1651338868779",
+)
+
+# Script generated for node Amazon S3
+AmazonS3_node1651338870962 = glueContext.write_dynamic_frame.from_options(
+    frame=DropDuplicates_node1651338856492,
+    connection_type="s3",
+    format="csv",
+    connection_options={"path": "s3://crimes-output-job-bucket", "partitionKeys": []},
+    transformation_ctx="AmazonS3_node1651338870962",
+)
+
+job.commit()
+
